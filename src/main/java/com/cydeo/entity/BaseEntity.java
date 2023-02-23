@@ -1,16 +1,20 @@
 package com.cydeo.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonTypeId;
+import lombok.*;
 
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@MappedSuperclass
 public class BaseEntity {
 
+    @Id
     private Long id;
     private LocalDateTime insertDateTime;
     private Long insertUserId;

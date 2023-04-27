@@ -1,13 +1,15 @@
 package com.nogayhusrev.service;
 
+
 import com.nogayhusrev.dto.UserDTO;
 
 import java.util.List;
 
+public interface UserService  {
 
-public interface UserService extends CrudService<UserDTO,String> {
-
-    List<UserDTO> findManagers();
-    List<UserDTO> findEmployees();
+    List<UserDTO> listAllUsers();
+    UserDTO findByUserName(String username);
+    void save(UserDTO user);
+    void deleteByUserName(String username);
 
 }

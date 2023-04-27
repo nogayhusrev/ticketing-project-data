@@ -1,15 +1,21 @@
 package com.nogayhusrev.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+@Entity
+@Table(name = "roles")
+public class Role extends BaseEntity {
 
-    private Long id;
     private String description;
 
 }

@@ -2,7 +2,7 @@ package com.nogayhusrev.enums;
 
 public enum Gender {
 
-    MALE("Male"),FEMALE("Female");
+    MALE("Male"), FEMALE("Female");
 
     private final String value;
 

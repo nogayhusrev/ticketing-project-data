@@ -1,11 +1,17 @@
 package com.nogayhusrev.service.impl;
 
+import com.nogayhusrev.dto.ProjectDTO;
 import com.nogayhusrev.dto.TaskDTO;
+import com.nogayhusrev.dto.UserDTO;
+import com.nogayhusrev.entity.Project;
 import com.nogayhusrev.entity.Task;
 import com.nogayhusrev.enums.Status;
+import com.nogayhusrev.mapper.ProjectMapper;
 import com.nogayhusrev.mapper.TaskMapper;
+import com.nogayhusrev.mapper.UserMapper;
 import com.nogayhusrev.repository.TaskRepository;
 import com.nogayhusrev.service.TaskService;
+import com.nogayhusrev.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,10 +24,16 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final ProjectMapper projectMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper) {
+    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper, ProjectMapper projectMapper, UserService userService, UserMapper userMapper) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.projectMapper = projectMapper;
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -46,7 +58,7 @@ public class TaskServiceImpl implements TaskService {
         Task convertedTask  = taskMapper.convertToEntity(dto);
 
         if(task.isPresent()){
-            convertedTask.setTaskStatus(task.get().getTaskStatus());
+            convertedTask.setTaskStatus(dto.getTaskStatus() == null ? task.get().getTaskStatus() : dto.getTaskStatus());
             convertedTask.setAssignedDate(task.get().getAssignedDate());
             taskRepository.save(convertedTask);
         }
@@ -85,4 +97,45 @@ public class TaskServiceImpl implements TaskService {
     public int totalCompletedTask(String projectCode) {
         return taskRepository.totalCompletedTasks(projectCode);
     }
+
+    @Override
+    public void deleteByProject(ProjectDTO projectDTO) {
+        Project project = projectMapper.convertToEntity(projectDTO);
+        List<Task> tasks = taskRepository.findAllByProject(project);
+        tasks.forEach(task -> delete(task.getId()));
+    }
+
+    @Override
+    public void completeByProject(ProjectDTO projectDTO) {
+        Project project = projectMapper.convertToEntity(projectDTO);
+        List<Task> tasks = taskRepository.findAllByProject(project);
+        tasks.stream().map(taskMapper::convertToDto).forEach(taskDTO -> {
+            taskDTO.setTaskStatus(Status.COMPLETE);
+            update(taskDTO);
+        });
+    }
+
+    @Override
+    public List<TaskDTO> listAllTasksByStatusIsNot(Status status) {
+        UserDTO loggedInUser = userService.findByUserName("john@employee.com");
+        List<Task> tasks = taskRepository.
+                findAllByTaskStatusIsNotAndAssignedEmployee(status, userMapper.convertToEntity(loggedInUser));
+        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskDTO> listAllTasksByStatus(Status status) {
+        UserDTO loggedInUser = userService.findByUserName("john@employee.com");
+        List<Task> tasks = taskRepository.
+                findAllByTaskStatusAndAssignedEmployee(status, userMapper.convertToEntity(loggedInUser));
+        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TaskDTO> listAllNonCompletedByAssignedEmployee(UserDTO assignedEmployee) {
+        List<Task> tasks = taskRepository
+                .findAllByTaskStatusIsNotAndAssignedEmployee(Status.COMPLETE, userMapper.convertToEntity(assignedEmployee));
+        return tasks.stream().map(taskMapper::convertToDto).collect(Collectors.toList());
+    }
+
 }

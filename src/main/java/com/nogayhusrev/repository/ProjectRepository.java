@@ -1,9 +1,13 @@
 package com.nogayhusrev.repository;
 
 import com.nogayhusrev.entity.Project;
+import com.nogayhusrev.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project,Long> {
 
     Project findByProjectCode(String code);
+    List<Project> findAllByAssignedManager(User manager);
 }
